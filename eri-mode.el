@@ -71,24 +71,22 @@ Example (positions marked with ^ are returned):
         (nreverse result) ; Destructive operation.
         ))))
 
-(defun eri-new-indentation-points ()
+(defvar eri-new-width 2
+  "The width of indentation for each new indentation point compared to its
+parent.")
+
+(defvar eri-new-points 2
+  "The number of new indentation points to offer on each line.")
+
+(defun eri-new-indentation-points (points)
   "Calculate new indentation points.
 Returns a singleton list containing the column number two steps
 in from the indentation of the first non-empty line (white space
 excluded) above the current line. If there is no such line,
 then the empty list is returned."
-  (let ((start (line-beginning-position)))
-    (save-excursion
-      ; Find a non-empty line above the current one, if any.
-      (while
-          (progn
-            (forward-line -1)
-            (not (or (bobp)
-                     (not (eri-current-line-empty))))))
-      (if (or (equal (point) start)
-              (eri-current-line-empty))
-          nil
-        (list (+ 2 (current-indentation)))))))
+  (let* ((parents (eri-take eri-new-points points))
+         (children (mapcar (lambda (p) (+ p eri-new-width)) parents)))
+    (append children parents)))
 
 (defun eri-calculate-indentation-points (reverse)
   "Calculate points used to indent the current line.
@@ -98,6 +96,7 @@ calculated; note that the current indentation is not included in
 the returned list."
   ;; First find a bunch of indentations used above the current line.
   (let ((points)
+        (points-above)
         (max)
         (start (line-beginning-position)))
     (save-excursion
@@ -108,11 +107,10 @@ the returned list."
             ; white space.
             (unless (or (equal (point) start)
                         (eri-current-line-empty))
-              (setq points
-                    (append
-                     (eri-calculate-indentation-points-on-line max)
-                     points))
-              (setq max (car points)))
+              (let ((points-on-line (eri-calculate-indentation-points-on-line max)))
+                (setq points (append points-on-line points))
+                (unless points-above (setq points-above points-on-line))
+                (setq max (car points))))
             ;; Stop after hitting the beginning of the buffer or a
             ;; non-empty, non-indented line.
             (not (or (bobp)
@@ -123,9 +121,10 @@ the returned list."
     ;; point is the one after the current one. Reverse if necessary.
     ;;
     ;; Note: sort and nreverse are destructive.
-    (let* ((ps0 (remove (current-indentation)
-                        (append (eri-new-indentation-points) points)))
-           (ps1 (eri-split (current-indentation) (sort ps0 '<)))
+    (let* ((here (current-indentation))
+           (new-points (eri-new-indentation-points points-above))
+           (ps0 (remove here (append new-points points)))
+           (ps1 (eri-split here (sort ps0 '<)))
            (ps2 (append (cdr ps1) (car ps1))))
       (if reverse
           (nreverse ps2)
