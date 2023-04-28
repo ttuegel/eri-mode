@@ -207,5 +207,78 @@ are calculated."
   (interactive)
   (eri-indent t))
 
+;;;###autoload
+(defvar eri-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") #'newline-and-indent)
+    (define-key map (kbd "<backtab>") #'eri-indent-reverse)
+    map)
+  "Keymap for `eri-mode'.")
+
+;;;###autoload
+(define-minor-mode eri-mode
+  "Enhanced Relative Indentation.
+
+TAB cycles between some possible indentation points.
+
+Assume that a file contains the following lines of code, with
+point on the line with three dots:
+
+frob = loooooooooooooooooooooooooong identifier
+foo = f a b
+  where
+    f (Foo x) y = let bar = x
+                      baz = 3 + 5
+
+...
+
+^ ^ ^ ^    ^  ^ ^ ^   ^ * ^ ^ ^ ^
+
+Then the ^'s and the * mark the indentation points that this
+function cycles through. The indentation points are selected as
+follows:
+
+  * All lines before the current one, up to and including the
+    first non-indented line (or the beginning of the buffer) are
+    considered.
+
+      foo = f a b
+        where
+          f (Foo x) y = let bar = x
+                            baz = 3 + 5
+
+  * On these lines, erase all characters that stand to the right
+    of some non-white space character on a lower line.
+
+      foo
+        whe
+          f (Foo x) y = let b
+                            baz = 3 + 5
+
+  * Also erase all characters not immediately preceded by white
+    space.
+
+      f
+        w
+          f (    x  y = l   b
+                            b   = 3 + 5
+
+  * The columns of all remaining characters are indentation
+    points.
+
+      f w f (    x  y = l   b   = 3 + 5
+      ^ ^ ^ ^    ^  ^ ^ ^   ^   ^ ^ ^ ^
+
+  * A new indentation point is also added, two steps in from the
+    indentation of the first non-empty line (white space
+    excluded) above the current line (if there is such a line).
+
+      f w f (    x  y = l   b   = 3 + 5
+      ^ ^ ^ ^    ^  ^ ^ ^   ^ * ^ ^ ^ ^"
+  
+  :keymap eri-mode-map
+  (kill-local-variable 'indent-line-function)
+  (setq-local indent-line-function #'eri-indent))
+
 (provide 'eri-mode)
 ;;; eri-mode.el ends here
