@@ -1,0 +1,28 @@
+* eri-mode
+
+=eri-mode= is an Emacs minor mode for indentation.
+=eri-mode= lets the user select the indentation of each line
+based on possible indentation points inferred from the preceeding lines.
+(=eri= stands for "Enhanced Relative Indentation".)
+The mode is ideal for whitespace-sensitive languages such as Haskell or Python
+because it allows the user to control the indentation,
+but it is also suitable for other languages or really any type of text.
+
+I created =eri-mode= because I was dissatisfied with the other options for indentation of Haskell code.
+I think that Emacs indentation modes generally try to be too automatic
+and sacrifice user control for the sake of being clever.
+I can't take credit for the idea, though:
+this package is based very heavily on the =eri= package
+that comes with =agda2-mode=.
+My contributions are only to re-package the indentation functions into a minor mode
+and add options to customize its behavior.
+
+** What
+
+** Why
+
+** How
+
+*** Install with `straight.el`
+
+*** Install by hand
