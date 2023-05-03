@@ -1,0 +1,9 @@
+frob = loooooooooooooooooooooooooong identifier
+foo = f a b
+  where
+    f (Foo x) y = let bar = x
+                      baz = 3 + 5
+
+;; Local Variables:
+;; eval: (eri-mode t)
+;; End:
